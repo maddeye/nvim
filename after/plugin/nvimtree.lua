@@ -9,6 +9,9 @@ vim.g.loaded_netrwPlugin = 1
 
 vim.cmd([[ highlight NvimTreeIndentMarker guifg=#A52AFF ]])
 
+-- nvimtree
+vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>")
+
 nvimtree.setup({
 	open_on_setup = false,
 	open_on_setup_file = false,
