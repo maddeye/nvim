@@ -1,59 +1,83 @@
-local lsp = require("lsp-zero")
-lsp.preset("recommended")
+local opts = { noremap = true, silent = true }
+vim.keymap.set('n', '<leader>de', vim.diagnostic.open_float, opts)
+vim.keymap.set('n', '<leader>dp', vim.diagnostic.goto_prev, opts)
+vim.keymap.set('n', '<leader>dn', vim.diagnostic.goto_next, opts)
 
-lsp.ensure_installed({
-	"tsserver",
-	"eslint",
-	"sumneko_lua",
-	"rust_analyzer",
-})
+-- Use an on_attach function to only map the following keys
+-- after the language server attaches to the current buffer
+local on_attach = function(_, bufnr, isTsserver)
+  -- Enable completion triggered by <c-x><c-o>
+  vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
-local cmp = require("cmp")
-local cmp_select = { behavior = cmp.SelectBehavior.Select }
-local cmp_mappings = lsp.defaults.cmp_mappings({
-	["<C-k>"] = cmp.mapping.select_prev_item(cmp_select),
-	["<C-n>"] = cmp.mapping.select_next_item(cmp_select),
-	["<C-y>"] = cmp.mapping.confirm({ select = true }),
-})
+  local bufopts = { noremap = true, silent = true, buffer = bufnr }
+  vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
+  vim.keymap.set('n', 'gd', '<cmd>Telescope lsp_definitions<cr>', bufopts)
+  vim.keymap.set('n', '<leader>k', vim.lsp.buf.hover, bufopts)
+  vim.keymap.set('n', '<leader>gi', vim.lsp.buf.implementation, bufopts)
+  vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
+  vim.keymap.set('n', '<leader>wa', vim.lsp.buf.add_workspace_folder, bufopts)
+  vim.keymap.set('n', '<leader>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
+  vim.keymap.set('n', '<leader>wl', function()
+    print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+  end, bufopts)
+  vim.keymap.set('n', '<leader>D', vim.lsp.buf.type_definition, bufopts)
+  vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, bufopts)
+  vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, bufopts)
+  vim.keymap.set('n', '<leader>gr', vim.lsp.buf.references, bufopts)
+  vim.keymap.set('n', '<leader>d', '<cmd>Telescope lsp_document_symbols<cr>', bufopts)
 
-lsp.setup_nvim_cmp({
-	mapping = cmp_mappings,
-})
+  -- Format on save
+  vim.api.nvim_create_autocmd('BufWritePre', {
+    group = vim.api.nvim_create_augroup('LspFormatting', { clear = true }),
+    buffer = bufnr,
+    callback = function()
+      if isTsserver == true then
+        require('typescript').actions.removeUnused({ sync = true })
+      end
 
-lsp.set_preferences({
-	suggest_lsp_servers = false,
-	sign_icons = {
-		error = "E",
-		warn = "W",
-		hint = "H",
-		info = "I",
-	},
-})
+      vim.lsp.buf.format()
+    end
+  })
+end
 
-lsp.on_attach(function(client, bufnr)
-	local opts = { buffer = bufnr, remap = false }
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-	if client.name == "eslint" then
-		vim.cmd.LspStop("eslint")
-		return
-	end
+local lsp_config = {
+  capabilities = capabilities,
+  on_attach = function(_, bufnr)
+    on_attach(_, bufnr)
+  end
+}
 
-	vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-	vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-	vim.keymap.set("n", "<leader>vws", vim.lsp.buf.workspace_symbol, opts)
-	vim.keymap.set("n", "<leader>vd", vim.diagnostic.open_float, opts)
-	vim.keymap.set("n", "<leader>D", "<cmd>Lspsaga show_line_diagnostics<CR>", opts) -- show  diagnostics for line
-	vim.keymap.set("n", "<leader>d", "<cmd>Lspsaga show_cursor_diagnostics<CR>", opts) -- show diagnostics for cursor
-	vim.keymap.set("n", "[d", vim.diagnostic.goto_next, opts)
-	vim.keymap.set("n", "]d", vim.diagnostic.goto_prev, opts)
-	vim.keymap.set("n", "<leader>vca", vim.lsp.buf.code_action, opts)
-	vim.keymap.set("n", "<leader>vrr", vim.lsp.buf.references, opts)
-	vim.keymap.set("n", "<leader>vrn", vim.lsp.buf.rename, opts)
-	vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
-end)
 
-lsp.setup()
-
-vim.diagnostic.config({
-	virtual_text = true,
+require('mason-lspconfig').setup_handlers({
+  function(server_name)
+    require('lspconfig')[server_name].setup(lsp_config)
+  end,
+  sumneko_lua = function()
+    require('lspconfig').sumneko_lua.setup(vim.tbl_extend('force', lsp_config, {
+      settings = {
+        Lua = {
+          diagnostics = {
+            globals = { 'vim' }
+          }
+        }
+      }
+    }))
+  end,
+  tsserver = function()
+    require("typescript").setup({
+      server = vim.tbl_extend('force', lsp_config, {
+        on_attach = function(_, bufnr)
+          on_attach(_, bufnr, true)
+        end
+      }),
+      init_options = {
+        preferences = {
+          importModuleSpecifierPreference = 'project=relative',
+          jsxAttributeCompletionStylr = 'none'
+        }
+      }
+    })
+  end,
 })

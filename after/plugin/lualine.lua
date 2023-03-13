@@ -1,8 +1,3 @@
-local status, lualine = pcall(require, "lualine")
-if not status then
-  return
-end
-
 local lualine_material = require("lualine.themes.material")
 
 local new_colors = {
@@ -25,10 +20,8 @@ lualine_material.command = {
 }
 
 
-lualine.setup({
+require('lualine').setup({
   options = {
     theme = lualine_material,
   }
 })
-
-
