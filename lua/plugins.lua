@@ -51,6 +51,12 @@ return require('packer').startup(function(use)
   use 'mg979/vim-visual-multi'
   use 'gelguy/wilder.nvim'
   use 'tpope/vim-surround'
+  use({
+    "numToStr/Comment.nvim",
+    config = function()
+      require("Comment").setup()
+    end,
+  })
 
   -- Lualine
   use({
