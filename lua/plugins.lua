@@ -44,17 +44,6 @@ return require('packer').startup(function(use)
   use 'jose-elias-alvarez/null-ls.nvim'
   use 'jay-babu/mason-null-ls.nvim'
 
-  -- Harpoon
-  use 'ThePrimeagen/harpoon'
-
-  -- Tree
-  use {
-    'nvim-tree/nvim-tree.lua',
-    requires = {
-      'nvim-tree/nvim-web-devicons',
-    },
-  }
-
   use 'nvim-treesitter/nvim-treesitter'
 
   -- Text
@@ -77,8 +66,6 @@ return require('packer').startup(function(use)
   })
 
   -- tmux & split window navigation
-  use("christoomey/vim-tmux-navigator")
-
   use("szw/vim-maximizer") -- maximizes and restores current window
 
   -- git
