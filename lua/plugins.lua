@@ -102,11 +102,14 @@ return require('packer').startup(function(use)
   use 'saadparwaiz1/cmp_luasnip'
 
   use 'windwp/nvim-ts-autotag'
-  -- use 'p00f/nvim-ts-rainbow'
+  use 'p00f/nvim-ts-rainbow'
   use 'axelvc/template-string.nvim'
 
   -- Style
   use 'j-hui/fidget.nvim'
+
+  -- Move in visual mode
+  use { 'echasnovski/mini.move', branch = 'stable' }
 
   -- For Windows and Mac, we can open an URL in the browser. For Linux, it may
   -- not be possible since we maybe in a server which disables GUI.
