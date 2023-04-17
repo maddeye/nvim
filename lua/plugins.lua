@@ -44,7 +44,9 @@ return require('packer').startup(function(use)
   use 'jose-elias-alvarez/null-ls.nvim'
   use 'jay-babu/mason-null-ls.nvim'
 
+  -- Treesitter
   use 'nvim-treesitter/nvim-treesitter'
+  use 'nvim-treesitter/nvim-treesitter-context'
 
   -- Text
   use 'windwp/nvim-autopairs'
