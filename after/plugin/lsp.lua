@@ -5,7 +5,7 @@ vim.keymap.set('n', '<leader>dn', vim.diagnostic.goto_next, opts)
 
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
-local on_attach = function(_, bufnr, isTsserver)
+local on_attach = function(client, bufnr, isTsserver)
   -- Enable completion triggered by <c-x><c-o>
   vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
@@ -32,12 +32,16 @@ local on_attach = function(_, bufnr, isTsserver)
     buffer = bufnr,
     callback = function()
       if isTsserver == true then
-        require('typescript').actions.removeUnused({ sync = true })
+        require('typescript').actions.removeUnused({ sync = false })
       end
 
       vim.lsp.buf.format()
     end
   })
+
+  if isTsserver == true then
+    require('twoslash-queries').attach(client, bufnr)
+  end
 end
 
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
@@ -68,8 +72,8 @@ require('mason-lspconfig').setup_handlers({
   tsserver = function()
     require("typescript").setup({
       server = vim.tbl_extend('force', lsp_config, {
-        on_attach = function(_, bufnr)
-          on_attach(_, bufnr, true)
+        on_attach = function(client, bufnr)
+          on_attach(client, bufnr, true)
         end
       }),
       init_options = {
