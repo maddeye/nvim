@@ -108,7 +108,7 @@ return require('packer').startup(function(use)
   use 'axelvc/template-string.nvim'
 
   -- Style
-  use 'j-hui/fidget.nvim'
+  use { 'j-hui/fidget.nvim', branch = 'legacy' }
 
   -- Move in visual mode
   use { 'echasnovski/mini.move', branch = 'stable' }
